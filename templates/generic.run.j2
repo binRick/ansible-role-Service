@@ -1,0 +1,20 @@
+#!/bin/sh
+{% if RootHome is defined %}
+export HOME=/root
+{% endif %}
+{% if Chdir is defined %}
+cd {{Chdir}}
+{% endif %}
+{% if servicePreExec is defined %}
+{{servicePreExec}}
+{% endif %}
+exec 2>&1
+{% if RunAsUser is not defined or RunAsUser == 'root' %}
+{% if noExec is defined and noExec %}
+{{Exec}}
+{% else %}
+exec {{Exec}}
+{% endif %}
+{% else %}
+exec /usr/local/bin/setuidgid {{RunAsUser|default('root')}} {{Exec}}
+{% endif %}

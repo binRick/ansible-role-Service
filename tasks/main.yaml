@@ -1,0 +1,19 @@
+---
+- name: Creating Service Directory
+  file: path={{serviceDirectory|default('/service')}}/{{Name}} state=directory recurse=yes
+- name: Creating Service Log Directory
+  file: path={{serviceDirectory|default('/service')}}/{{Name}}/log/main state=directory recurse=yes
+- name: Copying Service Log Run file
+  copy: src=generic_log.run dest={{serviceDirectory|default('/service')}}/{{Name}}/log/run mode=0755
+- name: Deploying Service Run file
+  register: runFile
+  template:
+        src: generic.run.j2
+        dest: "{{serviceDirectory|default('/service')}}/{{Name}}/run"
+        mode: 0755
+- name: Enabling and Starting Status Server Service
+  svc: name={{Name}} enabled=yes downed=no state=started service_dir={{serviceDirectory|default('/service')}}
+
+- name: Restarting Service
+  when: runFile|changed
+  svc: name={{Name}} state=restarted service_dir={{serviceDirectory|default('/service')}}
